@@ -1,4 +1,5 @@
-function Get-TCPConnectionLog {
+function Get-TCPConnectionLog
+{
     <#
     .SYNOPSIS
         Collect TCP Connections and optionally log to file
@@ -18,8 +19,10 @@ function Get-TCPConnectionLog {
         [Parameter(Mandatory = $false)][int]$Frequency = 5,
         [Parameter(Mandatory = $false)][int]$Seconds = 30
     )
-    Process {
-        while ($true) {
+    Process
+    {
+        while ($true)
+        {
             #Filter Listening ports
             $filter = {$_.Localaddress -ne '::' `
                     -and $_.Localaddress -ne '0.0.0.0' `
@@ -28,18 +31,22 @@ function Get-TCPConnectionLog {
             #Collect all current TCP Connections according to filter
             $currentConnections = get-nettcpconnection | Where-Object $filter
 
-            if ($lastoutput -ne $null) {# if first time running
+            if ($lastoutput -ne $null)
+            {
+                # if first time running
 
                 $newConnections = Compare-Object $lastoutput $currentConnections -passthru | Where-Object {$_.Sideindicator -eq '=>'}
 
             }
-            else {
+            else
+            {
                 $newConnections = $currentConnections
             }
-            
+            #Adding bullshit comments to test git
             $lastoutput = $currentConnections
 
-            foreach ($connection in $newConnections) {
+            foreach ($connection in $newConnections)
+            {
                 $output = [pscustomobject] @{
                     CreationTime  = $connection.CreationTime
                     LocalAddress  = $connection.Localaddress
@@ -50,11 +57,13 @@ function Get-TCPConnectionLog {
                     ProcessID     = $connection.OwningProcess
                     ProcessName   = get-process -Id $connection.OwningProcess | select-object -expandproperty processname
                 }
-                if ($Logpath -ne '') {
+                if ($Logpath -ne '')
+                {
                     
                     $output | Export-CSV -Append -Encoding UTF8 -NoTypeInformation -Path $LogPath
                 }
-                else {
+                else
+                {
                     Write-Output $output
                 }
             }
