@@ -42,7 +42,7 @@ function Get-TCPConnectionLog
             {
                 $newConnections = $currentConnections
             }
-            #Adding bullshit comments to test git
+            
             $lastoutput = $currentConnections
 
             foreach ($connection in $newConnections)
