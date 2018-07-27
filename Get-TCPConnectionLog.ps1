@@ -31,15 +31,13 @@ function Get-TCPConnectionLog
             #Collect all current TCP Connections according to filter
             $currentConnections = get-nettcpconnection | Where-Object $filter
 
-            if ($lastoutput -ne $null)
+            if ($lastoutput)
             {
-                # if first time running
-
                 $newConnections = Compare-Object $lastoutput $currentConnections -passthru | Where-Object {$_.Sideindicator -eq '=>'}
-
             }
             else
             {
+                # if first time running
                 $newConnections = $currentConnections
             }
             #Move current connections to Last connections
