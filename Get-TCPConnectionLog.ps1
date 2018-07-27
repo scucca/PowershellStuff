@@ -42,7 +42,7 @@ function Get-TCPConnectionLog
             {
                 $newConnections = $currentConnections
             }
-            
+            #Move current connections to Last connections
             $lastoutput = $currentConnections
 
             foreach ($connection in $newConnections)
