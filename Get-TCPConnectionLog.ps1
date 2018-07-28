@@ -10,17 +10,17 @@ function Get-TCPConnectionLog
         Version 1.0 - Date 27.07.2018
         Initial Creation
     #>
-
     #requires -Version 2
-
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param(
         [Parameter(Mandatory = $false)][string]$LogPath,
         [Parameter(Mandatory = $false)][int]$Frequency = 5,
-        [Parameter(Mandatory = $false)][int]$Seconds = 30
+        [Parameter(Mandatory = $false)][int]$Seconds = 30,
+        [Parameter(Mandatory = $false)][boolean]$ResolveIP = $false
     )
     Process
     {
+        $ErrorActionPreference = "silentlycontinue"
         while ($true)
         {
             #Filter Listening ports
@@ -30,7 +30,6 @@ function Get-TCPConnectionLog
             }
             #Collect all current TCP Connections according to filter
             $currentConnections = get-nettcpconnection | Where-Object $filter
-
             if ($lastoutput)
             {
                 $newConnections = Compare-Object $lastoutput $currentConnections -passthru | Where-Object {$_.Sideindicator -eq '=>'}
@@ -42,9 +41,21 @@ function Get-TCPConnectionLog
             }
             #Move current connections to Last connections
             $lastoutput = $currentConnections
-
             foreach ($connection in $newConnections)
             {
+                #Resolve IP to DNS Name
+                $DNSResult = [System.Net.Dns]::gethostentry($connection.RemoteAddress)
+                If ($DNSResult)
+                {
+                    $DNSName = $DNSResult.Hostname
+                }
+                else
+                {
+                    $DNSName = "Unknown"
+                }
+                #Resolve Process ID to Name
+                $ProcessName = get-process -Id $connection.OwningProcess -ErrorAction SilentlyContinue | select-object -expandproperty processname
+
                 $output = [pscustomobject] @{
                     CreationTime  = $connection.CreationTime
                     LocalAddress  = $connection.Localaddress
@@ -53,7 +64,8 @@ function Get-TCPConnectionLog
                     RemotePort    = $connection.RemotePort
                     State         = $connection.State
                     ProcessID     = $connection.OwningProcess
-                    ProcessName   = get-process -Id $connection.OwningProcess | select-object -expandproperty processname
+                    ProcessName   = $ProcessName
+                    DNSName       = $DNSName
                 }
                 if ($Logpath -ne '')
                 {
@@ -64,11 +76,12 @@ function Get-TCPConnectionLog
                 {
                     Write-Output $output
                 }
+                $DNSResult = ""
             }
-
-            start-sleep -seconds 5
+            Start-Sleep -Seconds 5
         }
-
     }
 }
-Get-TCPConnectionLog C:\temp\Logs\$env:Computername-TCPConnectionLog.log
+
+Get-TCPConnectionLog C:\temp\Logs\$env:Computername-TCPConnectionLog.log -ResolveIP $true
+Get-TCPConnectionLog -ResolveIP $true
