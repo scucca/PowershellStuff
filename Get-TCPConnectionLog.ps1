@@ -20,7 +20,7 @@ function Get-TCPConnectionLog
     )
     Process
     {
-        $ErrorActionPreference = "silentlycontinue"
+        $ErrorActionPreference = "SilentlyContinue"
         while ($true)
         {
             #Filter Listening ports
@@ -44,7 +44,7 @@ function Get-TCPConnectionLog
             foreach ($connection in $newConnections)
             {
                 #Resolve IP to DNS Name
-                $DNSResult = [System.Net.Dns]::gethostentry($connection.RemoteAddress)
+                $DNSResult = [System.Net.DNS]::GetHostEntry($connection.RemoteAddress)
                 If ($DNSResult)
                 {
                     $DNSName = $DNSResult.Hostname
@@ -67,6 +67,7 @@ function Get-TCPConnectionLog
                     ProcessName   = $ProcessName
                     DNSName       = $DNSName
                 }
+                #If Logpath is specified append to the file. If not write directly to console.
                 if ($Logpath -ne '')
                 {
                     
@@ -76,6 +77,7 @@ function Get-TCPConnectionLog
                 {
                     Write-Output $output
                 }
+                #Reset DNSResult, because GetHostEntry does not return $null if hostname is not found.
                 $DNSResult = ""
             }
             Start-Sleep -Seconds 5
