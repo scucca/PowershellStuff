@@ -43,18 +43,25 @@ function Get-TCPConnectionLog
             $lastoutput = $currentConnections
             foreach ($connection in $newConnections)
             {
-                #Resolve IP to DNS Name
-                $DNSResult = [System.Net.DNS]::GetHostEntry($connection.RemoteAddress)
-                If ($DNSResult)
+                try
                 {
-                    $DNSName = $DNSResult.Hostname
+                    $DNSName = ([System.Net.DNS]::GetHostEntry($connection.RemoteAddress)).Hostname
                 }
-                else
+                catch
                 {
                     $DNSName = "Unknown"
                 }
+                
                 #Resolve Process ID to Name
-                $ProcessName = get-process -Id $connection.OwningProcess -ErrorAction SilentlyContinue | select-object -expandproperty processname
+                try
+                {
+                    $ProcessName = get-process -Id $connection.OwningProcess -ErrorAction SilentlyContinue | select-object -expandproperty processname
+                }
+                catch
+                {
+                    $ProcessName = ""
+                }
+                
 
                 $output = [pscustomobject] @{
                     CreationTime  = $connection.CreationTime
