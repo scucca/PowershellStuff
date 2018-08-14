@@ -5,7 +5,7 @@ function Get-TCPConnectionLog
         Collect TCP Connections and optionally log to file
         
     .NOTES
-        Author: Emil Holm Halldórsson (ehalldorsson@kpmg.is)       
+        Author: Emil Holm Halldórsson (emil@8bit.is)       
         Version History:
         Version 1.0 - Date 27.07.2018
         Initial Creation
@@ -21,6 +21,7 @@ function Get-TCPConnectionLog
     Process
     {
         $ErrorActionPreference = "SilentlyContinue"
+        Write-Output "Press Ctrl+C to stop collecting logs."
         while ($true)
         {
             #Filter Listening ports
@@ -84,13 +85,11 @@ function Get-TCPConnectionLog
                 {
                     Write-Output $output
                 }
-                #Reset DNSResult, because GetHostEntry does not return $null if hostname is not found.
-                $DNSResult = ""
             }
             Start-Sleep -Seconds 5
         }
     }
 }
 
-Get-TCPConnectionLog C:\temp\Logs\$env:Computername-TCPConnectionLog.log -ResolveIP $true
-Get-TCPConnectionLog -ResolveIP $true
+#Get-TCPConnectionLog C:\temp\Logs\$env:Computername-TCPConnectionLog.log -ResolveIP $true
+#Get-TCPConnectionLog -ResolveIP $true | ft -AutoSize
