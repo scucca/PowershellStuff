@@ -24,7 +24,10 @@ function Get-Ping
         $combinativelatency = 0
         $lastping = 0
         $ErrorActionPreference = "SilentlyContinue"
+        $ping = Test-Connection -ComputerName $Computername -BufferSize $bufferSize -Delay $delay -count 1 -Quiet
+
         Write-Output "Press Ctrl+C to stop pinging."
+
         while ($true)
         {
             $ping = Test-Connection -ComputerName $Computername -BufferSize $bufferSize -Delay $delay -count 1
@@ -42,11 +45,13 @@ function Get-Ping
                 Average       = $average
                 Jitter        = $jitter
             }
+
+            $output
             $lastping = $ping.ResponseTime
-            $output | Out-Host
             Start-Sleep -Seconds 1
         }
     }
 }
 
-Get-Ping mbl.is | Format-Table -AutoSize
+#Get-Ping mbl.is
+Get-Ping mbl.is| Format-Table
