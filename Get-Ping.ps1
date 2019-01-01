@@ -13,7 +13,7 @@ function Get-Ping
     #requires -Version 2
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param(
-        [Parameter(Mandatory = $false,ValueFromPipeline = $true)][string[]]$Computername,
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true)][string[]]$Computername,
         [Parameter(Mandatory = $false)][int]$bufferSize = 32,
         [Parameter(Mandatory = $false)][int]$delay = 1,
         [Parameter(Mandatory = $false)][string]$LogPath
@@ -51,6 +51,7 @@ function Get-Ping
             {
                 Write-Output $output
             }
+            $lastping = $ping.ResponseTime
             Start-Sleep -Seconds $delay
         }
     }
