@@ -11,7 +11,7 @@ function Get-Collatz
         Initial Creation
     #>
     #requires -Version 2
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)][int]$number
     )
