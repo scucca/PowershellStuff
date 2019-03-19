@@ -16,7 +16,7 @@ function Get-TCPConnectionLog
         [Parameter(Mandatory = $false)][string]$LogPath,
         [Parameter(Mandatory = $false)][int]$Frequency = 5,
         [Parameter(Mandatory = $false)][int]$Seconds = 30,
-        [Parameter(Mandatory = $false)][boolean]$ResolveIP = $false
+        [Parameter(Mandatory = $false)][switch]$ResolveIP
     )
     Process
     {
