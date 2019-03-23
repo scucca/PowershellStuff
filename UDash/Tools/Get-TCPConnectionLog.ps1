@@ -5,7 +5,7 @@ function Get-TCPConnectionLog
         Collect TCP Connections and optionally log to file
         
     .NOTES
-        Author: Emil Holm Halldórsson (ehalldorsson@kpmg.is)       
+        Author: Emil Holm Halldórsson (emil@8bit.is)       
         Version History:
         Version 1.0 - Date 27.07.2018
         Initial Creation
@@ -16,11 +16,12 @@ function Get-TCPConnectionLog
         [Parameter(Mandatory = $false)][string]$LogPath,
         [Parameter(Mandatory = $false)][int]$Frequency = 5,
         [Parameter(Mandatory = $false)][int]$Seconds = 30,
-        [Parameter(Mandatory = $false)][boolean]$ResolveIP = $false
+        [Parameter(Mandatory = $false)][switch]$ResolveIP
     )
     Process
     {
         $ErrorActionPreference = "SilentlyContinue"
+        Write-Output "Press Ctrl+C to stop collecting logs."
         while ($true)
         {
             #Filter Listening ports
