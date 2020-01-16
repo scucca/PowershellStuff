@@ -18,10 +18,9 @@
 #>
 function Move-ItemWithUniqueName
 {
-    [CmdletBinding(DefaultParameterSetName = 'Parameter Set 1', 
+    [CmdletBinding( 
         SupportsShouldProcess = $true, 
         PositionalBinding = $false,
-        HelpUri = 'http://www.microsoft.com/',
         ConfirmImpact = 'Medium')]
     [Alias()]
     [OutputType([String])]
@@ -57,14 +56,13 @@ function Move-ItemWithUniqueName
     {
         if ($pscmdlet.ShouldProcess("Target", "Operation"))
         {
-            #$file = Get-ChildItem ".\1\1.txt"
+
             $file = Get-ChildItem $source
             $filename = $file.Name
             $basename = $file.basename
             $ext = $file.extension
-            #$destination = ".\2\"
             $destinationpath = join-path -Path $destination -ChildPath $filename
-            Write-Verbose $destinationpath
+            Write-Verbose -message "Intended destination:  $destinationpath"
             $num = 1
             while (Test-Path $destinationpath)
             {
