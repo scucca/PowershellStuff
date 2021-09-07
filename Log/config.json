@@ -1,0 +1,44 @@
+{
+    "_Info": [
+      "This is the JSON based Configuration for YOUR PROJECT OR SCRIPT HERE",
+      "",
+      "Please do not edit any fields without any permission of YOUR NAME HERE."
+    ],
+    "LogLevel": {
+      "Debug": {
+        "color" : "blue"
+      },
+      "Error" : {
+        "color" : "red"
+      }
+    },
+    "InternalInfo": {
+      "project": "YOUR PROJECT OR SCRIPT HERE",
+      "Modified": "XX/XX/2015",
+      "Author": "YOUR NAME <YOU@YOURDOMAIN.TLD>",
+      "Support": "YOUR SUPPORT CONDITION OR URL",
+      "license": "YOUR LICENSE TERMS HERE"
+    },
+    "Basic": {
+      "_ConfigVersion": "Configuration Version - For future usage only",
+      "ConfigVersion": "XX.XX.XX",
+      "_Customer": "Name of the customer company - For future usage only",
+      "Customer": "YOR CUSTOMER NAME HERE",
+      "_Environment": "Valid is: Production, Dryrun, Leaduser, Testing, Development",
+      "Environment": "Production",
+      "_Support": "This value will be provided by the support team, never change this by yourself!",
+      "Support": "VALUE HERE IF NEEDED"
+    },
+    "Logging": {
+      "_enabled": "Boolean / Valid is: true or false",
+      "enabled": "false",
+      "Settings": {
+        "_Directory": "An Example could be: Microsoft.PowerShell.Core\\FileSystem::\\\\psf\\Home\\Documents\\dev\\clones.new\\sca-powershell\\ - Mind the JSON escapes!",
+        "Directory": "C:\\scripts\\PowerShell\\logs\\",
+        "_level": "Valid is: Loglevel from 0 (none) to 9 (debug)",
+        "level": "0",
+        "_Debug": "General debug switch",
+        "Debug": "false"
+      }
+    }
+  }
