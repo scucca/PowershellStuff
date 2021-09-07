@@ -1,5 +1,3 @@
-$global:BaseConfig = "config.json"
-
 try {
     $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
     $configPath = Join-Path $scriptPath "config.json"
@@ -14,17 +12,8 @@ if (!($Config)) {
 }
 
 $global:ConfigVersion = ($Config.basic.ConfigVersion)
-
 $global:Company = ($Config.basic.Customer)
-
 $global:environment = ($Config.basic.environment)
-
-
-Write-host $global:ConfigVersion 
-Write-host $global:Company
-Write-host $global:environment
-
-
 
 function Write-ToLog {
     [CmdletBinding()]
