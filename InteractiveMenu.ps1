@@ -1,6 +1,5 @@
 
 $delay = 10
-#[Collections.ArrayList]$Creds = @()
 $global:Creds = @()
 $index = 0
 
@@ -8,7 +7,6 @@ function AddKey {
     $key = Get-Credential -Message "Enter new user/pass combo"
     $user = $key.GetNetworkCredential().UserName
     $pass = $key.GetNetworkCredential().Password
-    #$global:Creds += @{$($global:creds.count+1),$user,$pass}
     $global:index += 1
     $global:Creds += [PSCustomObject]@{
         Number = $global:index
@@ -32,15 +30,9 @@ function Show-MainMenu
     )
     
     Write-Host "================ $Title ================"
-    $i = 0
-    #if ($global:Creds.count -ge 2) {
         foreach ($Cred in $global:Creds) {
             Write-Host "Password '$($cred.Number)': `"$($Cred.User)`"."
         } 
-    #} 
-    #elseif ($global:Creds.count -eq 1) {
-    #    Write-Host "Password 1: `"$($global:Creds[0].user)`"."
-    #}
     Write-Host "A: Press 'A' to add."
     Write-Host "E: Press 'E' to edit."
     Write-Host "T: Press 'T' to Type Password."
@@ -50,11 +42,10 @@ function Show-MainMenu
     switch ($menuinput.ToLower())
     {
         {$_ -eq "a"} {Write-Host 'You chose option - New Creds';Addkey}
-        {$_ -eq 'e'} {Write-Host 'You chose option - Edit Creds';Read-Host} 
+        {$_ -eq 'e'} {Write-Host 'You chose option - Edit Creds(WIP)';Read-Host} 
         {$_ -eq 't'} {Write-Host 'You chose option - Type Creds';Show-TypeMenu} 
         {$_ -eq 'c'} {Write-Host 'You chose option - Copy Creds';Show-CopyMenu} 
         {$_ -eq 'q'} {Write-Host 'You chose option - Quit';exit} 
-        #{$_ -le 9 -and $_ -ge 1} {if (($global:Creds) -and ($menuinput -le $global:Creds.count)) {Type-Letters $Creds[$_-1].Values} else {Write-host "Invalid option. Try again";Read-Host}}
     }
 }
 
