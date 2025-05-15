@@ -112,6 +112,9 @@ function Type-Letters {
 
 
     foreach ($char in $text.ToCharArray()) {
+        if ($char -in ("+",")","(","^","%","~","{","}")) {
+            $char = "{$char}"
+        }
         [System.Windows.Forms.SendKeys]::SendWait($char)
         Start-Sleep -Milliseconds $delay
     }
