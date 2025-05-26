@@ -1,40 +1,115 @@
+<#
+Import-Module Microsoft.PowerShell.SecretManagement
+Import-Module Microsoft.PowerShell.SecretStore
+
+Register-SecretVault -Name PasswordKeeper -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
+
+
+
+
+#>
+
 
 $delay = 10
 $global:Creds = @()
 $index = 0
 
+function New-Vault {
+    Register-SecretVault -Name PasswordKeeper -VaultParameters @{Authentication=$null; Interaction=$null} -ModuleName Microsoft.PowerShell.SecretStore
+}
+function Test-Vault {
+    if ((Get-SecretStoreConfiguration | Select-Object -expand authentication) -ne "None") {
+        Reset-SecretStore -Authentication None -Interaction None -PasswordTimeout 0 -Force -Confirm:$false -WarningAction SilentlyContinue
+    }
+    $store = Get-SecretVault -Name PasswordKeeper -ErrorAction Silentlycontinue
+    if ($store -eq $null) {
+        Write-host "Not found"
+        New-Vault
+    }
+}
+
+
+Get-SecretInfo -Vault Passwordkeeper
+
 function AddKey {
     $key = Get-Credential -Message "Enter new user/pass combo"
-    $user = $key.GetNetworkCredential().UserName
-    $pass = $key.GetNetworkCredential().Password
-    $global:index += 1
-    $global:Creds += [PSCustomObject]@{
-        Number = $global:index
-        User = $user
-        Pass = $pass
+    set-secret -vault PasswordKeeper -name $key.GetNetworkCredential().Username -Secret $key.GetNetworkCredential().Password    
+}
+
+
+
+function EditKey ($index){
+    $key = get-credential -username $(get-secretinfo -vault PasswordKeeper)[$index].Name
+    set-secret -vault PasswordKeeper -name $key.GetNetworkCredential().Username -Secret $key.GetNetworkCredential().Password
+}
+
+function RemoveKey ($Name){
+    remove-secret -vault PasswordKeeper -name $name
+}
+
+    
+function Show-EditMenu
+{
+    param (
+    [string]$Title = 'Password Keeper - Type Menu'
+    )
+    Clear-Host
+    Write-Host "================ $Title ================"
+    $index = 1
+    $secrets = $(get-secretinfo -vault PasswordKeeper)
+    if ($secrets.count -ge 1) {
+            foreach ($cred in $secrets) {
+                Write-Host "Password '$index': `"$($cred.name)`"."
+                $index += 1
+            } 
     }
-    
+    Write-Host "Q: Press 'Q' to quit."
+    $menuinput = Read-Host "Please make a selection"
+    switch ($menuinput.ToLower())
+    {
+        {$_ -eq 'q'} {Write-Host 'You chose option - Quit';break}
+        {$_ -le 9 -and $_ -ge 1} {if ($menuinput -le $secrets.count) {EditKey $($_-1)} else {Write-host "Invalid option. Try again";Read-Host}}
+    }    
 }
 
-function EditKey {
-    $key = Get-Credential -Message "Enter new user/pass combo"
-    $user = $key.GetNetworkCredential().UserName | ConvertFrom-SecureString
-    $pass = $key.GetNetworkCredential().Password | ConvertFrom-SecureString
+function Show-RemoveMenu
+{
+    param (
+    [string]$Title = 'Password Keeper - Type Menu'
+    )
+    Clear-Host
+    Write-Host "================ $Title ================"
+    $index = 1
+    $secrets = $(get-secretinfo -vault PasswordKeeper)
+    if ($secrets.count -ge 1) {
+            foreach ($cred in $secrets) {
+                Write-Host "Password '$index': `"$($cred.name)`"."
+                $index += 1
+            } 
+    }
+    Write-Host "Q: Press 'Q' to quit."
+    $menuinput = Read-Host "Please make a selection"
+    switch ($menuinput.ToLower())
+    {
+        {$_ -eq 'q'} {Write-Host 'You chose option - Quit';break}
+        {$_ -le 9 -and $_ -ge 1} {if ($menuinput -le $secrets.count) {RemoveKey $($secrets[$_-1].Name)} else {Write-host "Invalid option. Try again";Read-Host}}
+    }    
 }
-    
-
 function Show-MainMenu
 {
     param (
     [string]$Title = 'Password Keeper - Main Menu'
     )
-    
+    $index = 1
+    $secrets = $(get-secretinfo -vault PasswordKeeper)
     Write-Host "================ $Title ================"
-        foreach ($Cred in $global:Creds) {
-            Write-Host "Password '$($cred.Number)': `"$($Cred.User)`"."
+        foreach ($cred in $secrets) {
+            Write-Host "Password '$index': `"$($cred.name)`"."
+            $index += 1
         } 
     Write-Host "A: Press 'A' to add."
     Write-Host "E: Press 'E' to edit."
+    Write-Host "R: Press 'R' to remove."
     Write-Host "T: Press 'T' to Type Password."
     Write-Host "C: Press 'C' to Copy Password."
     Write-Host "Q: Press 'Q' to quit."
@@ -42,7 +117,8 @@ function Show-MainMenu
     switch ($menuinput.ToLower())
     {
         {$_ -eq "a"} {Write-Host 'You chose option - New Creds';Addkey}
-        {$_ -eq 'e'} {Write-Host 'You chose option - Edit Creds(WIP)';Read-Host} 
+        {$_ -eq 'e'} {Write-Host 'You chose option - Edit Creds';Show-EditMenu} 
+        {$_ -eq 'r'} {Write-Host 'You chose option - Remove Creds';Show-RemoveMenu} 
         {$_ -eq 't'} {Write-Host 'You chose option - Type Creds';Show-TypeMenu} 
         {$_ -eq 'c'} {Write-Host 'You chose option - Copy Creds';Show-CopyMenu} 
         {$_ -eq 'q'} {Write-Host 'You chose option - Quit';exit} 
@@ -56,14 +132,13 @@ function Show-TypeMenu
     )
     Clear-Host
     Write-Host "================ $Title ================"
-    $i = 0
-    if ($global:creds.count -ge 2) {
-        foreach ($Cred in $global:Creds) {
-            $i += 1
-            Write-Host "Press '$($cred.number)' to Type password: `"$($Cred.user)`"."
-        } 
-    } elseif ($global:creds.count -eq 1) {
-        Write-Host "Password 1: `"$($global:Creds[0].User)`"."
+    $index = 1
+    $secrets = $(get-secretinfo -vault PasswordKeeper)
+    if ($secrets.count -ge 1) {
+            foreach ($cred in $secrets) {
+                Write-Host "Password '$index': `"$($cred.name)`"."
+                $index += 1
+            } 
     }
     Write-Host "Q: Press 'Q' to quit."
     $menuinput = Read-Host "Please make a selection"
@@ -72,7 +147,7 @@ function Show-TypeMenu
         {$_ -eq 't'} {Write-Host 'You chose option - Type Creds';Show-TypeMenu} 
         {$_ -eq 'c'} {Write-Host 'You chose option - Copy Creds';Read-Host} 
         {$_ -eq 'q'} {Write-Host 'You chose option - Quit';break}
-        {$_ -le 9 -and $_ -ge 1} {if (($global:Creds) -and ($menuinput -le $global:Creds.count)) {Type-Letters $global:Creds[$_-1].Pass} else {Write-host "Invalid option. Try again";Read-Host}}
+        {$_ -le 9 -and $_ -ge 1} {if ($menuinput -le $secrets.count) {Out-Letters $($secrets[$_-1] | get-secret -asplaintext)} else {Write-host "Invalid option. Try again";Read-Host}}
     }    
 }
 
@@ -83,26 +158,26 @@ function Show-CopyMenu
     )
     Clear-Host
     Write-Host "================ $Title ================"
-    $i = 0
-    if ($global:creds.count -ge 2) {
-        foreach ($Cred in $global:Creds) {
-            $i += 1
-            Write-Host "Press '$($cred.number)' to Copy password: `"$($Cred.user)`"."
-        } 
-    } elseif ($global:creds.count -eq 1) {
-        Write-Host "Password 1: `"$($global:Creds.User)`"."
+    $index = 1
+    $secrets = $(get-secretinfo -vault PasswordKeeper)
+    if ($secrets.count -ge 1) {
+            foreach ($cred in $secrets) {
+                Write-Host "Password '$index': `"$($cred.name)`"."
+                $index += 1
+            } 
     }
     Write-Host "Q: Press 'Q' to go back."
     $menuinput = Read-Host "Please make a selection"
     switch ($menuinput.ToLower())
     {
         {$_ -eq 'q'} {Write-Host 'You chose option - Quit';break}
-        {$_ -le 9 -and $_ -ge 1} {if (($global:Creds) -and ($menuinput -le $global:Creds.count)) {$global:Creds[$_-1].Pass | Set-Clipboard} else {Write-host "Invalid option. Try again";Read-Host}}
+        {$_ -le 9 -and $_ -ge 1} {if ($menuinput -le $secrets.count) {$secrets[$_-1] | get-secret -asplaintext | Set-Clipboard} else {Write-host "Invalid option. Try again";Read-Host}}
     }    
 }
 
 
-function Type-Letters {
+
+function Out-Letters {
     param (
         [string]$text
     )
@@ -124,6 +199,7 @@ function Type-Letters {
 }
 
  function Main {
+    Test-Vault
     do
     {
         Clear-Host
